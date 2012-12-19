@@ -1,6 +1,10 @@
 ## EyeTV - Plex renamer
 
-This tiny Ruby script scans "EyeTV Archive" folder for new recordings, and makes a symlink in the Plex TV folder with Plex's default scanner friendly filename. TV show titles and subtitles are parsed from EyeTV's own metadata.
+This tiny Ruby script scans "EyeTV Archive" folder for new recordings, and makes a symlink in the Plex TV folder with Plex's default scanner friendly filename, such as:
+
+    Show Name/2013/Show Name - 2013-01-02 - Episode Title.m4v
+
+TV show titles and subtitles are parsed from EyeTV's own metadata.
 
 By default, it will look for `~/Documents/EyeTV Arhive` for EyeTV recordings and creates a symbolic links in `~/Movies/TV Recordings` folder. You can change them with `EYETV_ARCHIVE` and `PLEX_FOLDER` environment variables.
 
