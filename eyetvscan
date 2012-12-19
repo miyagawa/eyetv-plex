@@ -8,9 +8,10 @@ class EyeTVScanTask
   PLEX_FOLDER  = ENV['PLEX_FOLDER'] || "#{ENV['HOME']}/Movies/TV\ Recordings"
 
   def run
-    recordings.reject(&:busy?).each do |recording|
+    recordings.select(&:done?).each do |recording|
       dest = recording.destination(Pathname.new(PLEX_FOLDER))
       unless dest.exist?
+        puts "New Recording: #{dest.basename}"
         FileUtils.mkdir_p dest.dirname
         dest.make_symlink(recording.media_file)
       end
@@ -35,8 +36,8 @@ class Recording
     @dir.children.find { |name| name.basename.to_s.end_with?(ext) }
   end
 
-  def busy?
-    media_file.basename.to_s.start_with?("busy_")
+  def done?
+    media_file && !media_file.basename.to_s.start_with?("busy_")
   end
 
   def media_file
@@ -48,7 +49,7 @@ class Recording
   end
 
   def title
-    metadata['epg info']['TITLE'].sub(/\[.*?\]/, '')
+    metadata['epg info']['TITLE'].gsub(/\[.*?\]/, '')
   end
 
   def subtitle
