@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+require 'plist'
+require 'pathname'
+require 'fileutils'
+
+class EyeTVScanTask
+  EYETV_FOLDER = ENV['EYETV_ARCHIVE'] || "#{ENV['HOME']}/Documents/EyeTV Archive"
+  PLEX_FOLDER  = ENV['PLEX_FOLDER'] || "#{ENV['HOME']}/Movies/TV\ Recordings"
+
+  def run
+    recordings.reject(&:busy?).each do |recording|
+      dest = recording.destination(Pathname.new(PLEX_FOLDER))
+      unless dest.exist?
+        FileUtils.mkdir_p dest.dirname
+        dest.make_symlink(recording.media_file)
+      end
+    end
+  end
+
+  def recordings
+    Pathname.new(EYETV_FOLDER).children.select { |n| n.basename.to_s.end_with?('.eyetv') }.
+      reject {|d| d == "Live TV Buffer.eyetv" }.
+      map {|dir| Recording.new(dir) }
+  end
+end
+
+class Recording
+  attr_accessor :dir
+
+  def initialize(dir)
+    @dir = Pathname.new(dir)
+  end
+
+  def locate(ext)
+    @dir.children.find { |name| name.basename.to_s.end_with?(ext) }
+  end
+
+  def busy?
+    media_file.basename.to_s.start_with?("busy_")
+  end
+
+  def media_file
+    locate('.m4v')
+  end
+
+  def metadata
+    @plist ||= Plist::parse_xml(locate('eyetvp'))
+  end
+
+  def title
+    metadata['epg info']['TITLE'].sub(/\[.*?\]/, '')
+  end
+
+  def subtitle
+    metadata['epg info']['SUBTITLE'].strip
+  end
+
+  def date
+    metadata['info']['start']
+  end
+
+  def year
+    date.year
+  end
+
+  def destination(base)
+    base.join(title, year.to_s, plex_filename)
+  end
+
+  def plex_filename
+    name = "#{title} - #{date.strftime('%Y-%m-%d')}"
+    name << " - #{subtitle}" unless subtitle.empty?
+    name << media_file.extname
+  end
+end
+
+EyeTVScanTask.new.run
