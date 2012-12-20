@@ -10,7 +10,7 @@ class EyeTVScanTask
   def run
     recordings.select(&:done?).each do |recording|
       dest = recording.destination(Pathname.new(PLEX_FOLDER))
-      unless dest.exist?
+      unless dest.symlink?
         puts "New Recording: #{dest.basename}"
         FileUtils.mkdir_p dest.dirname
         dest.make_symlink(recording.media_file)
