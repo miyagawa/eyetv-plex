@@ -80,9 +80,13 @@ class Recording
     base.join(title, year.to_s, plex_filename)
   end
 
+  def escape(string)
+    string.gsub(/\//, ':')
+  end
+
   def plex_filename
-    name = "#{title} - #{date.strftime('%Y-%m-%d')}"
-    name << " - #{subtitle}" unless subtitle.empty?
+    name = "#{escape(title)} - #{date.strftime('%Y-%m-%d')}"
+    name << " - #{escape(subtitle)}" unless subtitle.empty?
     name << media_file.extname
   end
 end
