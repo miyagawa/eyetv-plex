@@ -64,7 +64,7 @@ class Recording
     if epg
       epg['SUBTITLE'].strip
     else
-      nil
+      ''
     end
   end
 
