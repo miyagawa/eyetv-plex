@@ -48,12 +48,24 @@ class Recording
     @plist ||= Plist::parse_xml(locate('eyetvp'))
   end
 
+  def epg
+    @epg ||= metadata['epg info']
+  end
+
   def title
-    metadata['epg info']['TITLE'].gsub(/\[.*?\]/, '')
+    if epg
+      epg['TITLE'].gsub(/\[.*?\]/, '')
+    else
+      metadata['info']['title']
+    end
   end
 
   def subtitle
-    metadata['epg info']['SUBTITLE'].strip
+    if epg
+      epg['SUBTITLE'].strip
+    else
+      nil
+    end
   end
 
   def date
