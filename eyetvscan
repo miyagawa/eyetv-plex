@@ -59,7 +59,7 @@ class Recording
   end
 
   def title
-    metadata['info']['recording title']
+    metadata['info']['recording title'].gsub(/\[.*?\]/, '')
   end
 
   def subtitle
