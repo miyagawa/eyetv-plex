@@ -10,6 +10,12 @@ class EyeTVScanTask
   def run
     recordings.select(&:done?).each do |recording|
       dest = recording.destination(Pathname.new(PLEX_FOLDER))
+      if dest.symlink?
+        if dest.readlink != recording.media_file
+          dest = recording.destination(Pathname.new(PLEX_FOLDER), true)
+        end
+      end
+
       unless dest.symlink?
         puts "New Recording: #{dest.basename}"
         FileUtils.mkdir_p dest.dirname
@@ -19,7 +25,7 @@ class EyeTVScanTask
   end
 
   def children_with(path, ext)
-    path.children.select {|n| n.basename.to_s.ed_with?(ext) }
+    path.children.select {|n| n.basename.to_s.end_with?(ext) }
   end
 
   def recordings
@@ -68,17 +74,21 @@ class Recording
     date.year
   end
 
-  def destination(base)
-    base.join(title, year.to_s, plex_filename)
+  def destination(base, alternate = false)
+    base.join(title, year.to_s, plex_filename(alternate))
   end
 
   def escape(string)
     string.gsub(/\//, ':')
   end
 
-  def plex_filename
+  def plex_filename(alternate = false)
     name = "#{escape(title)} - #{date.strftime('%Y-%m-%d')}"
-    name << " - #{escape(subtitle)}" unless subtitle.empty?
+    if alternate
+      name << " - #{media_file.basename.sub(/.iPad\.m4v$/, '')}"
+    elsif !subtitle.empty?
+      name << " - #{escape(subtitle)}"
+    end
     name << media_file.extname
   end
 end
