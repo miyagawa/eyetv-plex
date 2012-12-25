@@ -18,54 +18,46 @@ class EyeTVScanTask
     end
   end
 
+  def children_with(path, ext)
+    path.children.select {|n| n.basename.to_s.ed_with?(ext) }
+  end
+
   def recordings
-    Pathname.new(EYETV_FOLDER).children.select { |n| n.basename.to_s.end_with?('.eyetv') }.
+    children_with(Pathname.new(EYETV_FOLDER), '.eyetv').
       reject {|d| d == "Live TV Buffer.eyetv" }.
-      map {|dir| Recording.new(dir) }
+      map {|dir| recordings_in(dir) }.flatten
+    end
+
+  def recordings_in(dir)
+    children_with(dir, '.iPad.m4v').map {|file| Recording.new(file) }
   end
 end
 
 class Recording
-  attr_accessor :dir
+  attr_accessor :media_file
 
-  def initialize(dir)
-    @dir = Pathname.new(dir)
+  def initialize(file)
+    @media_file = Pathname.new(file)
   end
 
   def locate(ext)
-    @dir.children.find { |name| name.basename.to_s.end_with?(ext) }
+    Pathname.new(@media_file.to_s.sub(/\.iPad\.m4v$/, ext))
   end
 
   def done?
-    media_file && !media_file.basename.to_s.start_with?("busy_")
-  end
-
-  def media_file
-    locate('.m4v')
+    !media_file.basename.to_s.start_with?("busy_")
   end
 
   def metadata
-    @plist ||= Plist::parse_xml(locate('eyetvp'))
-  end
-
-  def epg
-    @epg ||= metadata['epg info']
+    @plist ||= Plist::parse_xml(locate('.eyetvr'))
   end
 
   def title
-    if epg
-      epg['TITLE'].gsub(/\[.*?\]/, '')
-    else
-      metadata['info']['title']
-    end
+    metadata['info']['recording title']
   end
 
   def subtitle
-    if epg
-      epg['SUBTITLE'].strip
-    else
-      ''
-    end
+    metadata['info']['episode title'] || ''
   end
 
   def date
