@@ -10,7 +10,7 @@ By default, the script will look for `~/Documents/EyeTV Archive` for EyeTV recor
 
 It is required that you configure EyeTV to export the recordings in the same directory for iOS access. I set to the iPad 720p format which plays nicely with Plex.
 
-You can run this script periodically via crontab, or triggerd from `ExportDone` event [using EyeTV AppleScript integration](http://support.elgato.com/index.php?_m=knowledgebase&_a=viewarticle&kbarticleid=2727) (which I've personally never have managed to work).
+You can run this script periodically via crontab, or triggerd from `ExportDone` event [using EyeTV AppleScript integration](http://support.elgato.com/index.php?_m=knowledgebase&_a=viewarticle&kbarticleid=2727).
 
 ## Author
 
