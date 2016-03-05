@@ -74,8 +74,13 @@ class Recording
     date.year
   end
 
+  # https://support.plex.tv/hc/en-us/articles/200381053-Naming-Date-based-TV-Shows
   def destination(base, alternate = false)
-    base.join(title, year.to_s, plex_filename(alternate))
+    base.join(title, "Season #{season}", plex_filename(alternate))
+  end
+
+  def season
+    1
   end
 
   def escape(string)
